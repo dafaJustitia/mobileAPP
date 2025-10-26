@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         COMPOSE_FILE = 'docker-compose.yaml'
-        IMAGE_NAME   = 'mobileAPP' // Nama image lokal, tidak perlu username Docker Hub
+        IMAGE_NAME   = 'mobileapp' // Nama image lokal, tidak perlu username Docker Hub
     }
 
     stages {
