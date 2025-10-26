@@ -12,7 +12,7 @@ pipeline {
         stage('Checkout Source') {
             steps {
                 echo '🔄 Mengambil source code dari GitHub...'
-                git branch: 'main', url: 'https://github.com/dafaJustitia/mobileAPP.git'
+                git branch: 'master', url: 'https://github.com/dafaJustitia/mobileAPP.git'
             }
         }
 

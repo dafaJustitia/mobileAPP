@@ -6,8 +6,8 @@ services:
     container_name: mobileapp
     user: root
     ports:
-      - "8081:8080"
-      - "50001:50000"
+      - "8083:8080"
+      - "50002:50000"
     volumes:
       - ./jenkins_home:/var/jenkins_home
       - /var/run/docker.sock:/var/run/docker.sock
