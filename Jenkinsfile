@@ -2,36 +2,47 @@ pipeline {
     agent any
 
     environment {
-        // Nama file compose Anda
-        COMPOSE_FILE = 'docker-compose.yml'
-        IMAGE_NAME = 'mobileapp'
+        COMPOSE_FILE = 'docker-compose.yaml'
+        IMAGE_NAME = 'dafajustitiaa/mobileapp'
+        CONTAINER_APP = 'mobileapp'
+        DOCKERHUB_CREDENTIALS = credentials('tugasmobileapp')
     }
 
     stages {
         stage('Checkout Source') {
             steps {
                 echo '🔄 Mengambil source code dari GitHub...'
-                // Log Anda menunjukkan Anda menggunakan branch 'master'
-                git branch: 'master', url: 'https://github.com/dafaJustitia/mobileAPP.git'
+                git branch: 'main', url: 'https://github.com/dafaJustitia/mobileAPP.git'
             }
         }
 
-        stage('Build and Run with Docker Compose') {
+        stage('Build Docker Image') {
             steps {
-                echo '🚀 Membersihkan container lama (jika ada)...'
-                // TAMBAHKAN INI: 'down' akan stop & hapus container
-                // yang terdefinisi di file compose ini.
-                // Ini aman dijalankan walaupun container tidak ada.
-                bat "docker-compose -f ${COMPOSE_FILE} down"
-                
-                echo '🚀 Membangun dan menjalankan container baru...'
-                
-                // Perintah ini akan:
-                // 1. Menemukan docker-compose.yaml
-                // 2. Membangun image (karena ada '--build')
-                // 3. Menjalankan container di background
-                // --remove-orphans ditambahkan untuk kebersihan ekstra
-                bat "docker-compose -f ${COMPOSE_FILE} up -d --build --remove-orphans"
+                echo '🏗  Membangun image Docker...'
+                script {
+                    docker.build("${IMAGE_NAME}")
+                }
+            }
+        }
+
+        stage('Push to Docker Hub') {
+            steps {
+                echo '📦 Mengunggah image ke Docker Hub...'
+                script {
+                     bat """
+                     docker login -u %DOCKERHUB_CREDENTIALS_USR% -p %DOCKERHUB_CREDENTIALS_PSW%
+                    docker tag mobileapp %IMAGE_NAME%:latest
+                    docker push %IMAGE_NAME%:latest
+                    """
+                    
+                }
+            }
+        }
+
+        stage('Run with Docker Compose') {
+            steps {
+                echo '🚀 Menjalankan container aplikasi dengan Docker Compose...'
+                bat "docker compose -f ${COMPOSE_FILE} up -d"
             }
         }
 
@@ -44,7 +55,7 @@ pipeline {
 
     post {
         success {
-            echo '🎉 Pipeline berhasil.'
+            echo '🎉 Pipeline berhasil dijalankan dan image telah dipush ke Docker Hub.'
         }
         failure {
             echo '❌ Build gagal! Cek log pipeline untuk melihat kesalahan.'

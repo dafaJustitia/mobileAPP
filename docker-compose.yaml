@@ -6,7 +6,8 @@ services:
     container_name: mobileapp
     user: root
     ports:
-      - "8083:8080"
+      - "8081:8080"
+      - "50001:50000"
     volumes:
       - ./jenkins_home:/var/jenkins_home
       - /var/run/docker.sock:/var/run/docker.sock
@@ -23,10 +24,7 @@ services:
       - "19002:19002"
     volumes:
       - .:/app
-    # --- PERBAIKAN DI BAWAH INI ---
     command: >
-      sh -c "npx expo start --tunnel"
-    stdin_open: true  # <--- DITAMBAHKAN
-    tty: true         # <--- DITAMBAHKAN
+      bat -c "npm install && npx expo start --tunnel"
     depends_on:
       - jenkins
