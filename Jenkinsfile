@@ -3,16 +3,14 @@ pipeline {
 
     environment {
         COMPOSE_FILE = 'docker-compose.yaml'
-        IMAGE_NAME = 'jenkins/jenkins:lts'
-        CONTAINER_APP = 'mobileAPP'
-        // DOCKERHUB_CREDENTIALS = credentials('tugas2komputasi')
+        IMAGE_NAME   = 'mobileAPP' // Nama image lokal, tidak perlu username Docker Hub
     }
 
     stages {
         stage('Checkout Source') {
             steps {
                 echo '🔄 Mengambil source code dari GitHub...'
-                git branch: 'main', url: 'https://github.com/ayodya-jpg/poin3cc.git'
+                git branch: 'main', url: 'https://github.com/dafaJustitia/mobileAPP.git'
             }
         }
 
@@ -20,21 +18,8 @@ pipeline {
             steps {
                 echo '🏗  Membangun image Docker...'
                 script {
+                    // Membangun image dengan nama yang didefinisikan di environment
                     docker.build("${IMAGE_NAME}")
-                }
-            }
-        }
-
-        stage('Push to Docker Hub') {
-            steps {
-                echo '📦 Mengunggah image ke Docker Hub...'
-                script {
-                     bat """
-                     docker login -u %DOCKERHUB_CREDENTIALS_USR% -p %DOCKERHUB_CREDENTIALS_PSW%
-                    docker tag mobile2cc %IMAGE_NAME%:latest
-                    docker push %IMAGE_NAME%:latest
-                    """
-                    
                 }
             }
         }
@@ -42,20 +27,21 @@ pipeline {
         stage('Run with Docker Compose') {
             steps {
                 echo '🚀 Menjalankan container aplikasi dengan Docker Compose...'
-                bat "docker compose -f ${COMPOSE_FILE} up -d"
+                // Pastikan docker-compose.yaml menggunakan nama image yang sama
+                bat "docker-compose -f ${COMPOSE_FILE} up -d"
             }
         }
 
         stage('Post-Build') {
             steps {
-                echo '✅ Build dan Deploy selesai! Aplikasi berhasil dijalankan.'
+                echo '✅ Build dan Deploy lokal selesai! Aplikasi berhasil dijalankan.'
             }
         }
     }
 
     post {
         success {
-            echo '🎉 Pipeline berhasil dijalankan dan image telah dipush ke Docker Hub.'
+            echo '🎉 Pipeline build dan deploy lokal berhasil.'
         }
         failure {
             echo '❌ Build gagal! Cek log pipeline untuk melihat kesalahan.'
