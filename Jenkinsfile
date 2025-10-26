@@ -2,46 +2,49 @@ pipeline {
     agent any
 
     environment {
+        // Nama file compose Anda
         COMPOSE_FILE = 'docker-compose.yml'
-        IMAGE_NAME   = 'mobileapp' // Nama image lokal, tidak perlu username Docker Hub
+        IMAGE_NAME = 'mobileapp'
     }
 
     stages {
         stage('Checkout Source') {
             steps {
                 echo '🔄 Mengambil source code dari GitHub...'
+                // Log Anda menunjukkan Anda menggunakan branch 'master'
                 git branch: 'master', url: 'https://github.com/dafaJustitia/mobileAPP.git'
             }
         }
 
-        stage('Build Docker Image') {
+        stage('Build and Run with Docker Compose') {
             steps {
-                echo '🏗  Membangun image Docker...'
-                script {
-                    // Membangun image dengan nama yang didefinisikan di environment
-                    docker.build("${IMAGE_NAME}")
-                }
-            }
-        }
-
-        stage('Run with Docker Compose') {
-            steps {
-                echo '🚀 Menjalankan container aplikasi dengan Docker Compose...'
-                // Pastikan docker-compose.yaml menggunakan nama image yang sama
-                bat "docker-compose -f ${COMPOSE_FILE} up -d"
+                echo '🚀 Membersihkan container lama (jika ada)...'
+                // TAMBAHKAN INI: 'down' akan stop & hapus container
+                // yang terdefinisi di file compose ini.
+                // Ini aman dijalankan walaupun container tidak ada.
+                bat "docker-compose -f ${COMPOSE_FILE} down"
+                
+                echo '🚀 Membangun dan menjalankan container baru...'
+                
+                // Perintah ini akan:
+                // 1. Menemukan docker-compose.yaml
+                // 2. Membangun image (karena ada '--build')
+                // 3. Menjalankan container di background
+                // --remove-orphans ditambahkan untuk kebersihan ekstra
+                bat "docker-compose -f ${COMPOSE_FILE} up -d --build --remove-orphans"
             }
         }
 
         stage('Post-Build') {
             steps {
-                echo '✅ Build dan Deploy lokal selesai! Aplikasi berhasil dijalankan.'
+                echo '✅ Build dan Deploy selesai! Aplikasi berhasil dijalankan.'
             }
         }
     }
 
     post {
         success {
-            echo '🎉 Pipeline build dan deploy lokal berhasil.'
+            echo '🎉 Pipeline berhasil.'
         }
         failure {
             echo '❌ Build gagal! Cek log pipeline untuk melihat kesalahan.'
