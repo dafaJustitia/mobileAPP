@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        COMPOSE_FILE = 'docker-compose.yaml'
+        COMPOSE_FILE = 'docker-compose.yml'
         IMAGE_NAME   = 'mobileapp' // Nama image lokal, tidak perlu username Docker Hub
     }
 
